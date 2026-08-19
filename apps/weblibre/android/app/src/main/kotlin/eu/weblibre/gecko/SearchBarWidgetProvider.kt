@@ -1,4 +1,4 @@
-package eu.weblibre.gecko
+package com.muhib.isolator
 
 import android.content.Context
 import android.content.Intent

@@ -21,6 +21,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_material_design_icons/flutter_material_design_icons.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:skeletonizer/skeletonizer.dart';
@@ -43,6 +44,7 @@ class ContainerListScreen extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final containersAsync = ref.watch(watchContainersWithCountProvider);
+    final searchQuery = useState('');
     final selectedContainer = ref.watch(selectedContainerProvider);
     final repository = ref.watch(containerRepositoryProvider.notifier);
 
@@ -63,17 +65,39 @@ class ContainerListScreen extends HookConsumerWidget {
     }
 
     Widget buildList(List<ContainerDataWithCount> containers) {
+      final query = searchQuery.value.trim().toLowerCase();
+      final filteredContainers = query.isEmpty
+          ? containers
+          : containers
+                .where((container) => container.name?.toLowerCase().contains(query) ?? false)
+                .toList(growable: false);
+
       return CustomScrollView(
         slivers: [
           const SliverAppBar.large(title: Text('Containers')),
-          if (containers.isEmpty)
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+              child: TextField(
+                onChanged: (value) => searchQuery.value = value,
+                decoration: const InputDecoration(
+                  labelText: 'Search containers',
+                  prefixIcon: Icon(Icons.search),
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ),
+          ),
+          if (filteredContainers.isEmpty)
             SliverFillRemaining(
               hasScrollBody: false,
               child: Center(
                 child: Padding(
                   padding: const EdgeInsets.all(32),
                   child: Text(
-                    'No containers yet.',
+                    query.isEmpty
+                        ? 'No containers yet.'
+                        : 'No matching containers.',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
@@ -85,14 +109,20 @@ class ContainerListScreen extends HookConsumerWidget {
             SliverPadding(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
               sliver: SliverReorderableList(
-                itemCount: containers.length,
+                itemCount: filteredContainers.length,
                 onReorderItem: (oldIndex, newIndex) {
+                  if (query.isNotEmpty) return;
+
                   unawaited(
-                    repository.reorderContainer(containers, oldIndex, newIndex),
+                    repository.reorderContainer(
+                      containers,
+                      oldIndex,
+                      newIndex,
+                    ),
                   );
                 },
                 itemBuilder: (context, index) {
-                  final container = containers[index];
+                  final container = filteredContainers[index];
                   final isSelected = container.id == selectedContainer;
                   return Padding(
                     key: ValueKey(container.id),

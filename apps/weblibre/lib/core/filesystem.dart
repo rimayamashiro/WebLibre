@@ -224,8 +224,8 @@ class _Filesystem {
     Directory profileDir,
   ) async {
     final profileIds = fs.getMozillaProfileIds(profileDir);
-    // Pattern: /data/user/0/eu.weblibre.gecko/files/mozilla/
-    // Should become: /data/user/0/eu.weblibre.gecko/files/weblibre_profiles/profile-…/files/mozilla/
+    // Pattern: /data/user/0/com.muhib.isolator/files/mozilla/
+    // Should become: /data/user/0/com.muhib.isolator/files/weblibre_profiles/profile-…/files/mozilla/
     final oldPrefix = '${filesDir.path}/mozilla/';
     final newPrefix = '${profileDir.path}/files/mozilla/';
 

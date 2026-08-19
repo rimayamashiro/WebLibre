@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package eu.weblibre.gecko
+package com.muhib.isolator
 
 import android.content.Context
 import android.content.Intent
@@ -36,11 +36,11 @@ class MainActivity : FlutterFragmentActivity() {
         private const val TAG = "MainActivity"
 
         /** Marks the intent [checkAndExitPiP] sends to itself. */
-        private const val EXTRA_EXIT_PIP = "eu.weblibre.gecko.EXIT_PIP"
+        private const val EXTRA_EXIT_PIP = "com.muhib.isolator.EXIT_PIP"
     }
 
     private val TRIM_MEMORY_CHANNEL = "eu.weblibre.flutter_mozilla_components/trim_memory"
-    private val ACTIVITY_CHANNEL = "eu.weblibre.gecko/activity"
+    private val ACTIVITY_CHANNEL = "com.muhib.isolator/activity"
     private val ENGINE_ID = "engine_id"
     private var trimMemoryChannel: MethodChannel? = null
 

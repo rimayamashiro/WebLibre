@@ -65,8 +65,8 @@
             android:name="eu.weblibre.flutter_mozilla_components.gatekeeper.GatekeeperNotificationActionReceiver"
             android:exported="false">
             <intent-filter>
-                <action android:name="eu.weblibre.gecko.gatekeeper.ALLOW_ONCE" />
-                <action android:name="eu.weblibre.gecko.gatekeeper.ALWAYS_ALLOW" />
+                <action android:name="com.muhib.isolator.gatekeeper.ALLOW_ONCE" />
+                <action android:name="com.muhib.isolator.gatekeeper.ALWAYS_ALLOW" />
             </intent-filter>
         </receiver>
 

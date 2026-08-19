@@ -20,6 +20,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_material_design_icons/flutter_material_design_icons.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:weblibre/core/filesystem.dart';
@@ -33,6 +34,7 @@ class ProfileListScreen extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final usersAsync = ref.watch(profileRepositoryProvider);
+    final searchQuery = useState('');
 
     return Scaffold(
       appBar: AppBar(
@@ -49,27 +51,53 @@ class ProfileListScreen extends HookConsumerWidget {
       body: SafeArea(
         child: usersAsync.when(
           skipLoadingOnReload: true,
-          data: (profiles) => ListView.builder(
-            itemCount: profiles.length,
-            itemBuilder: (context, index) {
-              final profile = profiles[index];
-              final isSelected =
-                  filesystem.selectedProfile == profile.uuidValue;
+          data: (profiles) {
+            final query = searchQuery.value.trim().toLowerCase();
+            final filteredProfiles = query.isEmpty
+                ? profiles
+                : profiles
+                      .where((profile) => profile.name.toLowerCase().contains(query))
+                      .toList(growable: false);
 
-              return ListTile(
-                enabled: !isSelected,
-                leading: const Icon(Icons.person),
-                title: Text(profile.name),
-                subtitle: isSelected ? const Text('Active') : null,
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () async {
-                  await EditProfileRoute(
-                    profile: jsonEncode(profile.toJson()),
-                  ).push(context);
-                },
-              );
-            },
-          ),
+            return Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+                  child: TextField(
+                    onChanged: (value) => searchQuery.value = value,
+                    decoration: const InputDecoration(
+                      labelText: 'Search profiles',
+                      prefixIcon: Icon(Icons.search),
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: filteredProfiles.length,
+                    itemBuilder: (context, index) {
+                      final profile = filteredProfiles[index];
+                      final isSelected =
+                          filesystem.selectedProfile == profile.uuidValue;
+
+                      return ListTile(
+                        enabled: !isSelected,
+                        leading: const Icon(Icons.person),
+                        title: Text(profile.name),
+                        subtitle: isSelected ? const Text('Active') : null,
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: () async {
+                          await EditProfileRoute(
+                            profile: jsonEncode(profile.toJson()),
+                          ).push(context);
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ],
+            );
+          },
           error: (error, stackTrace) => Center(
             child: FailureWidget(
               title: 'Failed to load Profiles',
